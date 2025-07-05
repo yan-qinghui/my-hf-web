@@ -1,0 +1,31 @@
+name: Docker Publish
+
+# 当你向 main 分支推送代码时，自动触发此工作流
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  build_and_push_image:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write # 需要写入 GitHub Packages 的权限
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Log in to the GitHub Container Registry
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }} # GITHUB_TOKEN 是 GitHub 自动提供的
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          push: true
+          tags: ghcr.io/${{ github.repository }}:latest # 格式为 ghcr.io/你的用户名/你的仓库名:latest
